@@ -8,11 +8,13 @@ using namespace std;
 
 void hashFunction(Node** &table, Node* added);
 Node* add(Node* head, Node* current, Node* added);
-void print(Node* next);
+void print(Node** table);
+void printChain(Node* next);
 Node* del(Node* head, Node* current, int id);
 void average(Node* next, float sum);
 
 int length = 0; // keeps track of how many nodes are in the linked list (useful when adding the first node or removing the only node)
+int tsize = 100; // size of the hash table
 int main() {
   cout << "'ADD' to add a student" << endl; // information as to what you can do
   cout << "'PRINT' to print students" << endl;
@@ -20,7 +22,7 @@ int main() {
   cout << "'AVERAGE' to find the average GPA" << endl;
   cout << "'QUIT' to leave" << endl;
   
-  Node** table = new Node*[100];
+  Node** table = new Node*[tsize];
   
   while (true)
   {
@@ -35,10 +37,25 @@ int main() {
 
     Student* student2 = new Student();
     Node* current2 = new Node(student2);
-    strcpy(student->fname, "fdsa");
-    student->id = 420;
-    hashFunction(table, current);
+    strcpy(student2->fname, "fdsa");
+    student2->id = 123;
+    hashFunction(table, current2);
+
+    Student* student3 = new Student();
+    Node* current3 = new Node(student3);
+    strcpy(student3->fname, "mnoc");
+    student3->id = 123;
+    hashFunction(table, current3);
+
+    Student* student4 = new Student();
+    Node* current4 = new Node(student4);
+    strcpy(student4->fname, "sfwe");
+    student4->id = 123;
+    hashFunction(table, current4);
     
+    if (table[29]->getNext()->getNext() == NULL) {
+      cout << "nun daire";
+    }
     
     /*if (strcmp(cmd, "ADD") == 0) { // adds a student
       Student* student = new Student(); // adds a new student to modify
@@ -57,8 +74,8 @@ int main() {
       //head = add(head, head, current);
       //length++;
       }*/
-    else if (strcmp(cmd, "PRINT") == 0) { // print the students in the list
-      print(head);
+    if (strcmp(cmd, "PRINT") == 0) { // print the students in the list
+      print(table);
     }
     /*else if (strcmp(cmd, "DELETE") == 0) { // delete a student
       int iderase = -1;
@@ -81,7 +98,9 @@ int main() {
   return 0;
 }
 
-void hashFunction(Node** &table, Node* added) {
+void hashFunction(Node** &table, Node* added) { // add the digits in the student id. add that to the original student id. take the last 2 letters for the key
+  int id = added->getStudent()->id;
+  
   int n = added->getStudent()->id;
   int sum = 0;
   while (n != 0) {
@@ -89,10 +108,8 @@ void hashFunction(Node** &table, Node* added) {
     sum += last;
     n /= 10; // this works because its an int so it wont keep the decimal
   }
-  cout << sum;
 
-  int key = (n + sum) % 100;
-
+  int key = (id + sum) % 100;
   if (table[key] == NULL) { // first to this key
     table[key] = added;
   }
@@ -103,11 +120,9 @@ void hashFunction(Node** &table, Node* added) {
     }
     temp->setNext(added);
   }
-  
-  cout << table[sum]->getStudent()->fname;
 }
 
-Node* add(Node* head, Node* current, Node* added) { // add a node to the linked list
+/*Node* add(Node* head, Node* current, Node* added) { // add a node to the linked list
   if (length == 0) { // empty list so its sets the one added as the head
     return added;
   }
@@ -131,13 +146,21 @@ Node* add(Node* head, Node* current, Node* added) { // add a node to the linked 
     return added;
   }
   return head;
+  }*/
+
+void print(Node** table) { // print the linked list
+  for (int i = 0; i < tsize; i++) {
+    if (table[i] != NULL) {
+      printChain(table[i]);
+    }
+  }
 }
 
-void print(Node* next) { // print the linked list
+void printChain(Node* next) { // print the linked list
   if(next != NULL) {
     cout << next->getStudent()->fname << " " << next->getStudent()->lname << ", " << next->getStudent()->id << ", ";
     cout << fixed << setprecision(2) << next->getStudent()->gpa << endl;
-    print(next->getNext());
+    printChain(next->getNext());
   }
 }
 
