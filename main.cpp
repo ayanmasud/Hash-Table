@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void hashFunction(Node** &table, Node* added);
+void hashFunction(Node** &table, Node* added, int shift);
 Node* add(Node* head, Node* current, Node* added);
 void print(Node** table);
 void printChain(Node* next);
@@ -23,38 +23,47 @@ int main() {
   cout << "'QUIT' to leave" << endl;
   
   Node** table = new Node*[tsize];
+
+  Student* student = new Student();
+  Node* current = new Node(student);
+  strcpy(student->fname, "asdf");
+  student->id = 123;
+  hashFunction(table, current, 0);
+
+  Student* student2 = new Student();
+  Node* current2 = new Node(student2);
+  strcpy(student2->fname, "fdsa");
+  student2->id = 123;
+  hashFunction(table, current2, 0);
+
+  Student* student3 = new Student();
+  Node* current3 = new Node(student3);
+  strcpy(student3->fname, "mnoc");
+  student3->id = 123;
+  hashFunction(table, current3, 0);
+
+  Student* student4 = new Student();
+  Node* current4 = new Node(student4);
+  strcpy(student4->fname, "sfwe");
+  student4->id = 123;
+  hashFunction(table, current4, 0);
+
+  Student* student5 = new Student();
+  Node* current5 = new Node(student5);
+  strcpy(student5->fname, "ewae");
+  student5->id = 123;
+  hashFunction(table, current5, 0);
   
   while (true)
   {
     char cmd[8];
     cin.getline(cmd, 8); // get the command from the player
-
-    Student* student = new Student();
-    Node* current = new Node(student);
-    strcpy(student->fname, "asdf");
-    student->id = 123;
-    hashFunction(table, current);
-
-    Student* student2 = new Student();
-    Node* current2 = new Node(student2);
-    strcpy(student2->fname, "fdsa");
-    student2->id = 123;
-    hashFunction(table, current2);
-
-    Student* student3 = new Student();
-    Node* current3 = new Node(student3);
-    strcpy(student3->fname, "mnoc");
-    student3->id = 123;
-    hashFunction(table, current3);
-
-    Student* student4 = new Student();
-    Node* current4 = new Node(student4);
-    strcpy(student4->fname, "sfwe");
-    student4->id = 123;
-    hashFunction(table, current4);
     
-    if (table[29]->getNext()->getNext() == NULL) {
-      cout << "nun daire";
+    if (table[29]->getNext()->getNext() != NULL) {
+      cout << "daire";
+    }
+    else {
+      cout << "nun";
     }
     
     /*if (strcmp(cmd, "ADD") == 0) { // adds a student
@@ -98,7 +107,8 @@ int main() {
   return 0;
 }
 
-void hashFunction(Node** &table, Node* added) { // add the digits in the student id. add that to the original student id. take the last 2 letters for the key
+void hashFunction(Node** &table, Node* added, int shift) { // add the digits in the student id. add that to the original student id. take the last 2 letters for the key
+  cout << "s" << shift;
   int id = added->getStudent()->id;
   
   int n = added->getStudent()->id;
@@ -109,44 +119,44 @@ void hashFunction(Node** &table, Node* added) { // add the digits in the student
     n /= 10; // this works because its an int so it wont keep the decimal
   }
 
-  int key = (id + sum) % 100;
+  int key = ((id + sum) % 100) + (100 * shift);
+  cout << key;
+  
+  /*if (tsize-key < 0) { // key is bigger than table size. this means we need to make the table bigger
+    tsize+=100;
+    Node** arrtemp = new Node*[tsize];
+    /*for (int i = 0; i < tsize; i++) {
+      arrtemp[i] = table[i];
+      }
+    cout << "ran";
+    //table = arrtemp;
+    //hashFunction(table, added, shift);
+  }*/
+  
   if (table[key] == NULL) { // first to this key
+    cout << "first";
     table[key] = added;
   }
   else { // use linked list for this same location
     Node* temp = table[key];
+    int count = 1;
+    //cout << "c:" << count;
     while (temp->getNext() != NULL) {
       temp = temp->getNext();
+      count+=1;
+      cout << "c" << count;
     }
-    temp->setNext(added);
+    cout << endl; //<< count;
+    if (count < 3) {
+      temp->setNext(added);
+    }
+    else {
+      cout << "goo";
+      shift+=1;
+      //hashFunction(table, added, shift);
+    }
   }
 }
-
-/*Node* add(Node* head, Node* current, Node* added) { // add a node to the linked list
-  if (length == 0) { // empty list so its sets the one added as the head
-    return added;
-  }
-  
-  if (added->getStudent()->id > current->getStudent()->id) { // if the new node is bigger than the current
-    if (current->getNext() == NULL) {
-      current->setNext(added);
-      return head;
-    }
-    else if (added->getStudent()->id < current->getNext()->getStudent()->id) { // if the new node is less than than the currents next node. this is where the new node belongs
-      added->setNext(current->getNext());
-      current->setNext(added);
-      return head;
-    }
-    else { // new node is greater than currents next so we need to go deeper into the linked list to find its spot
-      add(head, current->getNext(), added); // recursion
-    }
-  } // new node is less than current so it becomes the new head
-  else {
-    added->setNext(head);
-    return added;
-  }
-  return head;
-  }*/
 
 void print(Node** table) { // print the linked list
   for (int i = 0; i < tsize; i++) {
