@@ -17,6 +17,8 @@ void average(Node* next, float sum);
 int length = 0; // keeps track of how many nodes are in the linked list (useful when adding the first node or removing the only node)
 int tsize = 100; // size of the hash table
 int main() {
+  srand(time(NULL));
+  
   cout << "'ADD' to add a student" << endl; // information as to what you can do
   cout << "'PRINT' to print students" << endl;
   cout << "'DELETE' to delete a student" << endl;
@@ -25,7 +27,7 @@ int main() {
   
   Node** table = new Node*[tsize];
 
-  Student* student = new Student();
+  /*Student* student = new Student();
   Node* current = new Node(student);
   strcpy(student->fname, "asdf");
   student->id = 123;
@@ -53,21 +55,32 @@ int main() {
   Node* current5 = new Node(student5);
   strcpy(student5->fname, "ewae");
   student5->id = 123;
-  hashFunction(table, current5, 0, tsize);
+  hashFunction(table, current5, 0, tsize);*/
 
-  // https://www.geeksforgeeks.org/read-a-file-line-by-line-in-cpp/
+  char fNameArr[15][20];
+  ifstream ffile("firstnames.txt");
+  string randFstr;
+  for(int i = 0; getline(ffile, randFstr); ++i) {
+    strcpy(fNameArr[i], randFstr.c_str()); // had to get assigned to a string\
+ originally so this line converts it into a char array
+    //cout << fNameArr[i] << endl;
+  }
+  ffile.close();
+
+  char lNameArr[15][20];
+  ifstream lfile("lastnames.txt");
+  string randLstr;
+  for(int i = 0; getline(lfile, randLstr); ++i) {
+    strcpy(lNameArr[i], randLstr.c_str()); // had to get assigned to a string\
+ originally so this line converts it into a char array
+    //cout << lNameArr[i] << endl;
+  }
+  lfile.close();
   
   while (true)
   {
     char cmd[8];
     cin.getline(cmd, 8); // get the command from the player
-    
-    if (table[29]->getNext()->getNext() != NULL) {
-      cout << "daire";
-    }
-    else {
-      cout << "nun";
-    }
     
     if (strcmp(cmd, "ADD") == 0) { // adds a student
       Student* student = new Student(); // adds a new student to modify
@@ -85,14 +98,50 @@ int main() {
       hashFunction(table, current, 0, tsize);
     }
     else if (strcmp(cmd, "RANDOM") == 0) { // print the students in the list
-      Student* student = new Student();
-      Node* current = new Node(student);
+      cout << "How many random students would you like to add? ";
+      int amount = 0;
+      cin >> amount;
 
-      ifstream("firstnames.txt",ios::in);
+      for (int i = 0; i < amount; i++) {
+	Student* student = new Student();
+	Node* current = new Node(student);
+
+	// source for file line extraction https://www.geeksforgeeks.org/read-a-file-line-by-line-in-cpp/
       
+	int randLine1 = (rand() % 14); // random line in list
+	int randLine2 = (rand() % 14); // random line in list
+
+	int randID = (rand() % 20000) + 500000; // random id num
+        //cout << "id" << randID;
+
+	float randGPA = (rand() % 401) / 100; // random gpa
+        //cout << endl << "gpa" << randGPA;
+
+	cout << "work1";
+	cout << "work2";
+	
+        // assign the students values
+	strcpy(student->fname, fNameArr[randLine1]);
+	cout << fNameArr[randLine1] << endl;
+	//cout << current->getStudent()->fname;
+        strcpy(student->lname, lNameArr[randLine2]);
+	student->id = randID;
+	student->gpa = randGPA;
+
+	int len = strlen(student->fname);
+	cout << "charlen" << len;
+	
+	hashFunction(table, current, 0, tsize);
+	cout << student->fname << endl;
+	cout << "third";
+
+	int len2 = strlen(student->fname);
+        cout << endl << "charlen2:" << len2 << endl;
+      }
     }
     else if (strcmp(cmd, "PRINT") == 0) { // print the students in the list
       print(table);
+      cout << "fourth";
     }
     /*else if (strcmp(cmd, "DELETE") == 0) { // delete a student
       int iderase = -1;
