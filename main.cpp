@@ -3,10 +3,11 @@
 #include "node.h"
 #include <vector>
 #include <iomanip>
+#include <fstream>
 
 using namespace std;
 
-void hashFunction(Node** &table, Node* added, int shift);
+void hashFunction(Node** &table, Node* added, int shift, int &tsize);
 Node* add(Node* head, Node* current, Node* added);
 void print(Node** table);
 void printChain(Node* next);
@@ -28,31 +29,33 @@ int main() {
   Node* current = new Node(student);
   strcpy(student->fname, "asdf");
   student->id = 123;
-  hashFunction(table, current, 0);
+  hashFunction(table, current, 0, tsize);
 
   Student* student2 = new Student();
   Node* current2 = new Node(student2);
   strcpy(student2->fname, "fdsa");
   student2->id = 123;
-  hashFunction(table, current2, 0);
+  hashFunction(table, current2, 0, tsize);
 
   Student* student3 = new Student();
   Node* current3 = new Node(student3);
   strcpy(student3->fname, "mnoc");
   student3->id = 123;
-  hashFunction(table, current3, 0);
+  hashFunction(table, current3, 0, tsize);
 
   Student* student4 = new Student();
   Node* current4 = new Node(student4);
   strcpy(student4->fname, "sfwe");
   student4->id = 123;
-  hashFunction(table, current4, 0);
+  hashFunction(table, current4, 0, tsize);
 
   Student* student5 = new Student();
   Node* current5 = new Node(student5);
   strcpy(student5->fname, "ewae");
   student5->id = 123;
-  hashFunction(table, current5, 0);
+  hashFunction(table, current5, 0, tsize);
+
+  // https://www.geeksforgeeks.org/read-a-file-line-by-line-in-cpp/
   
   while (true)
   {
@@ -66,7 +69,7 @@ int main() {
       cout << "nun";
     }
     
-    /*if (strcmp(cmd, "ADD") == 0) { // adds a student
+    if (strcmp(cmd, "ADD") == 0) { // adds a student
       Student* student = new Student(); // adds a new student to modify
       Node* current = new Node(student); // this node will carry this student
       
@@ -79,11 +82,16 @@ int main() {
       cout << "GPA: ";
       cin >> student->gpa;
 
-      hashFunction(table, current);
-      //head = add(head, head, current);
-      //length++;
-      }*/
-    if (strcmp(cmd, "PRINT") == 0) { // print the students in the list
+      hashFunction(table, current, 0, tsize);
+    }
+    else if (strcmp(cmd, "RANDOM") == 0) { // print the students in the list
+      Student* student = new Student();
+      Node* current = new Node(student);
+
+      ifstream("firstnames.txt",ios::in);
+      
+    }
+    else if (strcmp(cmd, "PRINT") == 0) { // print the students in the list
       print(table);
     }
     /*else if (strcmp(cmd, "DELETE") == 0) { // delete a student
@@ -107,53 +115,47 @@ int main() {
   return 0;
 }
 
-void hashFunction(Node** &table, Node* added, int shift) { // add the digits in the student id. add that to the original student id. take the last 2 letters for the key
-  cout << "s" << shift;
+void hashFunction(Node** &table, Node* added, int shift, int &tsize) {
   int id = added->getStudent()->id;
-  
-  int n = added->getStudent()->id;
+
+  // sum of the digits in the student ID
   int sum = 0;
+  int n = id;
   while (n != 0) {
-    int last = n % 10;
-    sum += last;
-    n /= 10; // this works because its an int so it wont keep the decimal
+    sum += n % 10;
+    n /= 10;
   }
 
+  // formula for key
   int key = ((id + sum) % 100) + (100 * shift);
-  cout << key;
+  //cout << key;
   
-  /*if (tsize-key < 0) { // key is bigger than table size. this means we need to make the table bigger
-    tsize+=100;
-    Node** arrtemp = new Node*[tsize];
-    /*for (int i = 0; i < tsize; i++) {
-      arrtemp[i] = table[i];
-      }
-    cout << "ran";
-    //table = arrtemp;
-    //hashFunction(table, added, shift);
-  }*/
-  
-  if (table[key] == NULL) { // first to this key
-    cout << "first";
-    table[key] = added;
+  // resize the table by 100 if the key doesnt fit inside tsize
+  while (key >= tsize) {
+    int newSize = tsize + 100;
+    Node** newTable = new Node*[newSize]();
+    for (int i = 0; i < tsize; i++) { // copy existing stuff into new table
+      newTable[i] = table[i];
+    }
+    delete[] table; // delete old table info from memory
+    table = newTable;
+    tsize = newSize;
   }
-  else { // use linked list for this same location
+
+  // adding node into the table
+  if (table[key] == nullptr) { // first node at this key
+    table[key] = added;
+  } else { // not first node so we need linked list
     Node* temp = table[key];
-    int count = 1;
-    //cout << "c:" << count;
-    while (temp->getNext() != NULL) {
+    int count = 2;
+    while (temp->getNext() != nullptr) { // go through list until last one
       temp = temp->getNext();
-      count+=1;
-      cout << "c" << count;
+      count++; // keep track of amount of nodes in list
     }
-    cout << endl; //<< count;
-    if (count < 3) {
+    if (count < 4) { // only allow 3 collisions in the linked list
       temp->setNext(added);
-    }
-    else {
-      cout << "goo";
-      shift+=1;
-      //hashFunction(table, added, shift);
+    } else { // recursion for shifting it 100 down the table
+      hashFunction(table, added, shift + 1, tsize);
     }
   }
 }
