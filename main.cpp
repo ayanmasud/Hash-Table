@@ -1,3 +1,8 @@
+/* Hash Table - Data Structure for Student Information
+   Author: Ayan Masud
+   Date: 2/6/25
+ */
+
 #include <iostream>
 #include <cstring>
 #include "node.h"
@@ -11,8 +16,8 @@ void hashFunction(Node** &table, Node* added, int shift, int &tsize);
 Node* add(Node* head, Node* current, Node* added);
 void print(Node** table);
 void printChain(Node* next);
-Node* del(Node* head, Node* current, int id);
-void average(Node* next, float sum);
+void del(Node** table, int id);
+Node* delChain(Node* head, Node* current, int id);
 
 int length = 0; // keeps track of how many nodes are in the linked list (useful when adding the first node or removing the only node)
 int tsize = 100; // size of the hash table
@@ -20,42 +25,12 @@ int main() {
   srand(time(NULL));
   
   cout << "'ADD' to add a student" << endl; // information as to what you can do
+  cout << "'RANDOM' to add a randomly generated student" << endl;
   cout << "'PRINT' to print students" << endl;
   cout << "'DELETE' to delete a student" << endl;
-  cout << "'AVERAGE' to find the average GPA" << endl;
   cout << "'QUIT' to leave" << endl;
   
-  Node** table = new Node*[tsize];
-
-  /*Student* student = new Student();
-  Node* current = new Node(student);
-  strcpy(student->fname, "asdf");
-  student->id = 123;
-  hashFunction(table, current, 0, tsize);
-
-  Student* student2 = new Student();
-  Node* current2 = new Node(student2);
-  strcpy(student2->fname, "fdsa");
-  student2->id = 123;
-  hashFunction(table, current2, 0, tsize);
-
-  Student* student3 = new Student();
-  Node* current3 = new Node(student3);
-  strcpy(student3->fname, "mnoc");
-  student3->id = 123;
-  hashFunction(table, current3, 0, tsize);
-
-  Student* student4 = new Student();
-  Node* current4 = new Node(student4);
-  strcpy(student4->fname, "sfwe");
-  student4->id = 123;
-  hashFunction(table, current4, 0, tsize);
-
-  Student* student5 = new Student();
-  Node* current5 = new Node(student5);
-  strcpy(student5->fname, "ewae");
-  student5->id = 123;
-  hashFunction(table, current5, 0, tsize);*/
+  Node** table = new Node*[tsize]; // hash table
 
   char fNameArr[15][20];
   ifstream ffile("firstnames.txt");
@@ -108,63 +83,50 @@ int main() {
 
 	// source for file line extraction https://www.geeksforgeeks.org/read-a-file-line-by-line-in-cpp/
       
-	int randLine1 = (rand() % 14); // random line in list
-	int randLine2 = (rand() % 14); // random line in list
+	int randLine1 = (rand() % 15); // random line in list
+	int randLine2 = (rand() % 15); // random line in list
 
 	int randID = (rand() % 20000) + 500000; // random id num
         //cout << "id" << randID;
 
-	float randGPA = (rand() % 401) / 100; // random gpa
+	float randGPA = (rand() % 401) / 100.0f; // random gpa
         //cout << endl << "gpa" << randGPA;
 
-	cout << "work1";
-	cout << "work2";
-	
         // assign the students values
 	strcpy(student->fname, fNameArr[randLine1]);
-	cout << fNameArr[randLine1] << endl;
+	//cout << fNameArr[randLine1] << endl;
 	//cout << current->getStudent()->fname;
         strcpy(student->lname, lNameArr[randLine2]);
 	student->id = randID;
 	student->gpa = randGPA;
 
 	int len = strlen(student->fname);
-	cout << "charlen" << len;
 	
 	hashFunction(table, current, 0, tsize);
-	cout << student->fname << endl;
-	cout << "third";
-
-	int len2 = strlen(student->fname);
-        cout << endl << "charlen2:" << len2 << endl;
       }
+
     }
     else if (strcmp(cmd, "PRINT") == 0) { // print the students in the list
       print(table);
-      cout << "fourth";
     }
-    /*else if (strcmp(cmd, "DELETE") == 0) { // delete a student
+    else if (strcmp(cmd, "DELETE") == 0) { // delete a student
       int iderase = -1;
       cout << "Enter the ID of the person to delete: ";
       cin >> iderase;
 
-      head = del(head, head, iderase);
-      length--;
-    }
-    else if (strcmp(cmd, "AVERAGE") == 0) { // calculate the average gpa
-      average(head, 0);
+      del(table, iderase);
     }
     else if (strcmp(cmd, "QUIT") == 0) { // quit
       cout << endl << "Cya!" << endl;
       break;
-      }*/
+    }
     cout << endl;
   }
   
   return 0;
 }
 
-void hashFunction(Node** &table, Node* added, int shift, int &tsize) {
+void hashFunction(Node** &table, Node* added, int shift, int &tsize) { // hash function for determining the key, adding the students node to the table, making sure the table is sized correctly with less than 4 collisions
   int id = added->getStudent()->id;
 
   // sum of the digits in the student ID
@@ -175,7 +137,7 @@ void hashFunction(Node** &table, Node* added, int shift, int &tsize) {
     n /= 10;
   }
 
-  // formula for key
+  // formula for key: add the individual digits of the student id together and that sum to the student id unaltered. the last 2 digits is the key
   int key = ((id + sum) % 100) + (100 * shift);
   //cout << key;
   
@@ -209,7 +171,7 @@ void hashFunction(Node** &table, Node* added, int shift, int &tsize) {
   }
 }
 
-void print(Node** table) { // print the linked list
+void print(Node** table) { // iterate through the hash table and print the linked list at the head of anything thats not null
   for (int i = 0; i < tsize; i++) {
     if (table[i] != NULL) {
       printChain(table[i]);
@@ -219,13 +181,21 @@ void print(Node** table) { // print the linked list
 
 void printChain(Node* next) { // print the linked list
   if(next != NULL) {
-    cout << next->getStudent()->fname << " " << next->getStudent()->lname << ", " << next->getStudent()->id << ", ";
-    cout << fixed << setprecision(2) << next->getStudent()->gpa << endl;
+    cout << endl << next->getStudent()->fname << endl << next->getStudent()->lname << endl << "ID: " << next->getStudent()->id << endl;
+    cout << fixed << setprecision(2) << "GPA: " << next->getStudent()->gpa << endl;
     printChain(next->getNext());
   }
 }
 
-Node* del(Node* head, Node* current, int id) { // delete a student from the linked list based off an id inputted
+void del(Node** table, int id) { // iterate through the hash table
+  for (int i = 0; i < tsize; i++) {
+    if (table[i] != NULL) {
+      table[i] = delChain(table[i], table[i], id);
+    }
+  }
+}
+
+Node* delChain(Node* head, Node* current, int id) { // delete a student from the linked list based off an id inputted
   if (current->getStudent()->id == id && length == 1) { // deleting the only student in the list
     head->~Node();
     return NULL;
@@ -245,22 +215,10 @@ Node* del(Node* head, Node* current, int id) { // delete a student from the link
 	return head;
       }
       else { // keep going through the linked list until you find it
-	del(head, current->getNext(), id); // recursion
+	delChain(head, current->getNext(), id); // recursion
       }
     }
   }
-  cout << "Invalid ID" << endl;
+  //cout << "Invalid ID" << endl;
   return head;
-}
-
-void average(Node* next, float sum) { // calculates the average gpa among all the students in the list
-  if (next != NULL) {
-    sum+=next->getStudent()->gpa;
-    average(next->getNext(), sum); // recursion
-  }
-  else {
-    float avg = sum/length;
-    cout << "GPA average of all students: ";
-    cout << fixed << setprecision(2) << avg << endl;
-  }
 }
